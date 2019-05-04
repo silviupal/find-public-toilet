@@ -1,10 +1,20 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Find public toilet</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
 
+    <!-- Permissions -->
+    <string name="permission_needed_location">Location permission is required to find the toilet</string>
+
+    <!-- Dialog messages -->
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="dialog_need_location_permission_title">Can\'t access your location</string>
+    <string name="dialog_need_location_permission_message" tools:ignore="Typos">Wanna pee? We need your location to guide you to the closest public toilet.</string>
+    <string name="dialog_grant_permission">Yes, please!</string>
+    <string name="dialog_info_location_title">We need your location</string>
+    <string name="dialog_info_location_message">For finding a toilet, we need to know where you are. Can you please give us permission to receive this info?</string>
+
+    <!-- Toast messages -->
+    <string name="toast_no_location_info">No location info</string>
+    <string name="exit">Exit</string>
 </resources>

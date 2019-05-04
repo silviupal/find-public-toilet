@@ -3,7 +3,6 @@ package silviupal.findpublictoilet.base
 import android.os.Bundle
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import silviupal.findpublictoilet.R
 
 /**

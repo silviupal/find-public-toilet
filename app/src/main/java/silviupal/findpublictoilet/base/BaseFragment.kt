@@ -14,13 +14,6 @@ abstract class BaseFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         inflater.inflate(getLayoutId(), container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupToolbar()
-    }
-
     @LayoutRes
     abstract fun getLayoutId(): Int
-
-    abstract fun setupToolbar()
 }
