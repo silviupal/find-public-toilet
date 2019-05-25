@@ -24,6 +24,10 @@ import silviupal.findpublictoilet.R
 import silviupal.findpublictoilet.base.BaseFragment
 import silviupal.findpublictoilet.extensions.showToast
 import silviupal.findpublictoilet.utils.DialogUtils
+import androidx.lifecycle.ViewModelProviders
+import silviupal.findpublictoilet.firebase.viewmodel.MyToiletsVM
+import androidx.lifecycle.Observer
+import silviupal.findpublictoilet.firebase.model.ToiletModel
 
 /**
  * Created by Silviu Pal on 4/26/2019.
@@ -46,11 +50,22 @@ class TheMapFragment : BaseFragment(), OnMapReadyCallback, EasyPermissions.Permi
 
         checkForPermission()
         setupMapSettings()
+        setupObservers()
 
         // Add a marker in Sydney and move the camera
         val sydney = LatLng(-34.0, 151.0)
         mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+    }
+
+    private fun setupObservers() {
+        val model = ViewModelProviders.of(this).get(MyToiletsVM::class.java)
+        model.getLiveData().observe(this, Observer<List<ToiletModel>> { toilets ->
+            toilets?.let {
+                context?.showToast("List taken from DB")
+                // TODO Update UI
+            }
+        })
     }
 
     private fun setupMapSettings() {

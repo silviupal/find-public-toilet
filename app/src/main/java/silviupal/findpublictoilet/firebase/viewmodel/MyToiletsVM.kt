@@ -1,28 +1,30 @@
 package silviupal.findpublictoilet.firebase.viewmodel
 
-import androidx.lifecycle.ViewModel
-import silviupal.findpublictoilet.firebase.ToiletModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.FirebaseDatabase
+import silviupal.findpublictoilet.base.BaseFirebaseVM
+import silviupal.findpublictoilet.firebase.model.ToiletModel
 
 /**
  * Created by Silviu Pal on 4/30/2019.
  */
-class MyToiletsVM : ViewModel() {
+class MyToiletsVM : BaseFirebaseVM<LiveData<List<ToiletModel>>>(FirebaseDatabase.getInstance().getReference("/toilets")) {
 
-    var toilets: List<ToiletModel>? = null
+    override fun getLiveData(): LiveData<List<ToiletModel>> = convertData(liveData.value)
 
-    https: //medium.com/globallogic-latinoamerica-mobile/viewmodel-firebase-database-3cc708044b5d
-
-    /*private MutableLiveData<List<Article>> articles;
-    public LiveData<List<Article>> getArticles() {
-        if (articles == null) {
-            articles = new MutableLiveData<List<Article>>();
-            loadArticles();
+    override fun convertData(dataSnapshot: DataSnapshot?): LiveData<List<ToiletModel>> {
+        var list = emptyList<ToiletModel>()
+        dataSnapshot?.children?.forEach {
+            val value = it.getValue(ToiletModel::class.java)
+            value?.let {
+                list = list + it
+            }
         }
-        return articles;
+
+        return MutableLiveData<List<ToiletModel>>().apply {
+            value = list
+        }
     }
-
-    private void loadArticles() {
-        // do async operation to fetch articles
-    }*/
-
 }
