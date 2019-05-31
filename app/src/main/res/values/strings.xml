@@ -16,5 +16,6 @@
 
     <!-- Toast messages -->
     <string name="toast_no_location_info">No location info</string>
+    <string name="toast_location_changed">Location changed</string>
     <string name="exit">Exit</string>
 </resources>

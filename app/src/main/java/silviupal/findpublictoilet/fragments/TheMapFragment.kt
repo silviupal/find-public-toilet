@@ -10,11 +10,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.DataSnapshot
 import kotlinx.android.synthetic.main.fragment_maps.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
@@ -22,12 +27,12 @@ import silviupal.findpublictoilet.BuildConfig
 import silviupal.findpublictoilet.MyPermissions
 import silviupal.findpublictoilet.R
 import silviupal.findpublictoilet.base.BaseFragment
+import silviupal.findpublictoilet.extensions.convertToToilets
+import silviupal.findpublictoilet.extensions.getAddress
 import silviupal.findpublictoilet.extensions.showToast
-import silviupal.findpublictoilet.utils.DialogUtils
-import androidx.lifecycle.ViewModelProviders
-import silviupal.findpublictoilet.firebase.viewmodel.MyToiletsVM
-import androidx.lifecycle.Observer
 import silviupal.findpublictoilet.firebase.model.ToiletModel
+import silviupal.findpublictoilet.firebase.viewmodel.MyToiletsVM
+import silviupal.findpublictoilet.utils.DialogUtils
 
 /**
  * Created by Silviu Pal on 4/26/2019.
@@ -46,40 +51,12 @@ class TheMapFragment : BaseFragment(), OnMapReadyCallback, EasyPermissions.Permi
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        setLocationButtonListener()
 
+        setLocationButtonListener()
         checkForPermission()
         setupMapSettings()
         setupObservers()
-
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-    }
-
-    private fun setupObservers() {
-        val model = ViewModelProviders.of(this).get(MyToiletsVM::class.java)
-        model.getLiveData().observe(this, Observer<List<ToiletModel>> { toilets ->
-            toilets?.let {
-                context?.showToast("List taken from DB")
-                // TODO Update UI
-            }
-        })
-    }
-
-    private fun setupMapSettings() {
-        with(mMap.uiSettings) {
-            isZoomControlsEnabled = true
-            isCompassEnabled = true
-            isMyLocationButtonEnabled = true
-            isIndoorLevelPickerEnabled = true
-            isMapToolbarEnabled = true
-            isZoomGesturesEnabled = true
-            isScrollGesturesEnabled = true
-            isTiltGesturesEnabled = true
-            isRotateGesturesEnabled = true
-        }
+        animateCameraToMyCurrentPosition()
     }
 
     private fun setLocationButtonListener() {
@@ -103,6 +80,54 @@ class TheMapFragment : BaseFragment(), OnMapReadyCallback, EasyPermissions.Permi
             mMap.isMyLocationEnabled = true
         } else {
             showLocationInfoDialog()
+        }
+    }
+
+    private fun setupMapSettings() {
+        with(mMap.uiSettings) {
+            isZoomControlsEnabled = true
+            isCompassEnabled = true
+            isMyLocationButtonEnabled = true
+            isIndoorLevelPickerEnabled = true
+            isMapToolbarEnabled = true
+            isZoomGesturesEnabled = true
+            isScrollGesturesEnabled = true
+            isTiltGesturesEnabled = true
+            isRotateGesturesEnabled = true
+        }
+    }
+
+    private fun setupObservers() {
+        val model = ViewModelProviders.of(this).get(MyToiletsVM::class.java)
+        model.liveData.observe(this, Observer<DataSnapshot> { dataSnapshot ->
+            context?.showToast("List taken from DB")
+            addMarkers(dataSnapshot.convertToToilets())
+        })
+    }
+
+    private fun addMarkers(toilets: List<ToiletModel>) {
+        mMap.clear()
+        toilets.forEach { toilet ->
+            val toiletOnMap = LatLng(toilet.latitude.toDouble(), toilet.longitude.toDouble())
+            mMap.addMarker(MarkerOptions().position(toiletOnMap).title(toilet.getAddress(context)))
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun animateCameraToMyCurrentPosition() {
+        if (MyPermissions.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) && mMap.isMyLocationEnabled) {
+            activity?.let {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(it)
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        val cameraPosition = CameraPosition.Builder()
+                            .target(LatLng(location.latitude, location.longitude))
+                            .zoom(15f)
+                            .build()
+                        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                    }
+                }
+            }
         }
     }
 
